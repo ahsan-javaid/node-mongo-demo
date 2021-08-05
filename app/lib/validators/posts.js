@@ -5,6 +5,7 @@ exports.addPost = (req, res, next) => {
   const schema = Joi.object({
     title: Joi.string().required(),
     body: Joi.string().required(),
+    category: Joi.string().valid('Politics', 'Gaming', 'Sports', 'Social', 'Economy', 'Research', 'Personal').required(),
   });
   validateRequest(req, res, next, schema);
 }
