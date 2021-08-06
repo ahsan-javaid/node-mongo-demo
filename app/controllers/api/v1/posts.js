@@ -20,7 +20,7 @@ module.exports = (router) => {
 
   router.get('/:id', async (req, res) => {
     try {
-        const post = await db.Posts.findOne({_id: req.params.id});
+        const post = await db.Posts.findOne({_id: req.params.id}).populate("categories");
         
         if(post)
             res.http200({post: post});
@@ -35,15 +35,20 @@ module.exports = (router) => {
   router.post('/', validator.addPost, async (req, res) => {
     try {
         const {title, body, category} = req.body;
-        const category_temp = await db.Categories.findOne({title: category});
-        const post = await db.Posts.create({title, body});
+        const categoryTemp = await db.Categories.find({ 'title': { $in: category}});
 
-        post.categories.push(category_temp._id);
-        category_temp.posts.push(post._id);
-        
-        await category_temp.save();
-        await post.save();
+        categoryTemp.forEach((element, index, arr) => {
+          arr[index] = element._id;
+        });
 
+        let postBody = {
+          title,
+          body,
+          categories: categoryTemp
+        };
+        const post = await db.Posts.create(postBody);
+
+        await db.Categories.updateMany({'_id': { $in: categoryTemp }},{ $push: {posts: post._id}});
         await db.Users.updateOne({ _id: req.user._id}, {$push: { posts: post._id}});
         res.http200({post: post});
 
@@ -52,9 +57,9 @@ module.exports = (router) => {
     }
   });
 
-  router.put('/:id', async (req, res) => {
+  router.put('/:id', validator.addPost, async (req, res) => {
     try {
-        const post = await db.Posts.updateOne({_id: req.params.id}, req.body)
+        const post = await db.Posts.updateOne({_id: req.params.id}, req.body);
         res.http200({post: post});
     } catch (error) {
         res.http400(error.toString());
@@ -63,7 +68,8 @@ module.exports = (router) => {
 
   router.delete('/:id', async (req, res) => {
     try {
-        const post = await db.Posts.remove({_id: req.params.id})
+        const categories = await db.Categories.updateMany({}, { $pull: {posts: req.params.id} });
+        const post = await db.Posts.remove({_id: req.params.id});
         res.http200({post: post});
     } catch (error) {
         res.http400(error.toString());
