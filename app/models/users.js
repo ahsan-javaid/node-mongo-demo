@@ -11,6 +11,11 @@ const schema = new mongoose.Schema({
   phoneNumber: {type: String},
   about: {type: String},
   picture: {type: String, default: 'https://s3.amazonaws.com/37assets/svn/765-default-avatar.png'},
+  //Adding Posts here as => User has Many Posts
+  posts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Posts"
+  }],
   createdAt: {type: Date, default: Date.now, select: false},
   updatedAt: {type: Date, default: Date.now, select: false},
 }, {collection: modelName});

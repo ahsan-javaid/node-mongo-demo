@@ -15,6 +15,10 @@
     {
       "name": "Category",
       "description": "Everything about your Category"
+    },
+    {
+      "name": "Post",
+      "description": "Everything about your Posts"
     }
   ],
   "schemes": [

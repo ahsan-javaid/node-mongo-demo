@@ -26,6 +26,15 @@ module.exports = {
         message: err
       }
     });
+  },
+
+  http404: function (err) {
+    return this.status(404).json({
+      status: {
+        code: 404,
+        message: err || "Not found!"
+      }
+    });
   }
 
 }

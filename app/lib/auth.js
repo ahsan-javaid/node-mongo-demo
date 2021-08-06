@@ -16,7 +16,7 @@ module.exports =  function() {
       if (!decoded) {
         return res.status(401).send({status: "error", message: "Invalid Token"}).end();
       }
-      const user = await db[decoded.model].findById(decoded._id).lean();
+      const user = await db[decoded.model].findById(decoded._id).lean().populate("Posts");
       if (!user) {
         return res.status(401).send({status: "error", message: "user not found"}).end();
 
