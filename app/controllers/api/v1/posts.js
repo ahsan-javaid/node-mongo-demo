@@ -1,12 +1,11 @@
 const db = global.db;
-const mongoose = require("mongoose");
-const { post } = require("../../../..");
 const validator = require("../../../lib/validators/posts");
 
 module.exports = (router) => {
   router.get("/", async (req, res) => {
     try {
-      const posts = await db.Posts.find({})
+      const posts = await db.Posts.find({ _id: { $in: req.user.posts } })
+        .populate("categories", ["-posts", "-__v"])
         .sort({ _id: -1 })
         .skip(req.query.offset ? parseInt(req.query.offset) : 0)
         .limit(req.query.limit ? parseInt(req.query.limit) : 0);
@@ -14,7 +13,7 @@ module.exports = (router) => {
       res.http200({ posts });
     } catch (error) {
       res.http400({
-        message: "Sorry, posts could not be fetched",
+        message: "Sorry, could not fetch posts",
         error: error.toString(),
       });
     }
@@ -22,11 +21,16 @@ module.exports = (router) => {
 
   router.get("/:id", async (req, res) => {
     try {
-      const posts = await db.Posts.findOne({ _id: req.params.id });
-      res.http200({ posts });
+      const post = await db.Posts.findOne({ _id: req.params.id }).populate(
+        "categories"
+      );
+
+      post
+        ? res.http200({ post: post })
+        : res.http404("Sorry, could not find post");
     } catch (error) {
       res.http400({
-        message: "Sorry, please provide a valid post id",
+        message: "Sorry, could not fetch post",
         error: error.toString(),
       });
     }
@@ -34,31 +38,27 @@ module.exports = (router) => {
 
   router.post("/", async (req, res) => {
     try {
-      const { title, body, picture, categories } = req.body;
+      const { title, body, picture, categories: categoryTitles } = req.body;
 
-      let categoryIds = [];
-
-      if (categories !== undefined && categories.length !== 0) {
-        categories.forEach(async (categoryTitle) => {
-          const category = await db.Categories.findOne({
-            title: categoryTitle,
-          });
-
-          if (!category) {
-            throw new Error(`Category: ${categoryTitle} does not exist`);
-          }
-
-          categoryIds = [...categoryIds, category._id];
-        });
+      if (categoryTitles === undefined) {
+        throw new Error(
+          "Categories not provided. Please provide categories (categories: ['categoryA', 'categoryB'])"
+        );
       }
 
-      const user = req.user
-        ? await db.Users.findOne({ _id: req.user._id })
-        : null;
+      if (!req.user) {
+        throw new Error(
+          `Pleae login and provide authentication token to create a post ${req.user}`
+        );
+      }
 
-      if (user) {
-        user.posts.push(post._id);
-        await user.save();
+      const categories = await db.Categories.find({
+        title: { $in: categoryTitles },
+      });
+
+      let categoryIds = [];
+      for (const category of categories) {
+        categoryIds.push(category._id);
       }
 
       const post = await db.Posts.create({
@@ -67,6 +67,18 @@ module.exports = (router) => {
         picture,
         categories: categoryIds,
       });
+
+      // user.posts.push(post._id);
+      // await user.save();
+
+      await db.Categories.updateMany(
+        { _id: { $in: categories } },
+        { $push: { posts: post._id } }
+      );
+      await db.Users.updateOne(
+        { _id: req.user._id },
+        { $push: { posts: post._id } }
+      );
 
       res.http200({ post });
     } catch (error) {
@@ -92,7 +104,13 @@ module.exports = (router) => {
   router.delete("/:id", async (req, res) => {
     try {
       const postCount = await db.Posts.count({ _id: req.params._id });
-      const user = await db.Users.findOne({ _id: req.user._id });
+      const user = req.user;
+
+      if (!req.user) {
+        throw new Error(
+          `Pleae login and provide authentication token to create a post ${req.user}`
+        );
+      }
 
       if (postCount === 1) {
         user.posts = user.posts.filter(

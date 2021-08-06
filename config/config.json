@@ -26,7 +26,7 @@
     "authentication": {
       "enabled": true,
       "priority": 100,
-      "route": "/api/v1((?!$))((?!/categories))((?!/posts))((?!/users/signup))((?!/users/forgot))((?!/users/change))((?!/users/activate-code))((?!/users/login))*",
+      "route": "\/api\/v1((?!$))((?!\/categories))((?!\/users\/signup))((?!\/users\/forgot))((?!/users/change))((?!\/users\/activate-code))((?!\/users\/login))*",
       "module": {
         "name": "path:./app/lib/auth"
       }
