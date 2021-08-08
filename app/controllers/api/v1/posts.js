@@ -4,6 +4,23 @@ const validator = require("../../../lib/validators/posts");
 module.exports = (router) => {
   router.get("/", async (req, res) => {
     try {
+      const posts = await db.Posts.find({})
+        .populate("categories", ["-posts", "-__v"])
+        .sort({ _id: -1 })
+        .skip(req.query.offset ? parseInt(req.query.offset) : 0)
+        .limit(req.query.limit ? parseInt(req.query.limit) : 0);
+
+      res.http200({ posts });
+    } catch (error) {
+      res.http400({
+        message: "Sorry, could not fetch posts",
+        error: error.toString(),
+      });
+    }
+  });
+
+  router.get("/me", async (req, res) => {
+    try {
       const posts = await db.Posts.find({ _id: { $in: req.user.posts } })
         .populate("categories", ["-posts", "-__v"])
         .sort({ _id: -1 })
@@ -36,7 +53,7 @@ module.exports = (router) => {
     }
   });
 
-  router.post("/", async (req, res) => {
+  router.post("/", validator.addPost, async (req, res) => {
     try {
       const { title, body, picture, categories: categoryTitles } = req.body;
 
