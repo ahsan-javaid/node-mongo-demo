@@ -68,15 +68,13 @@ module.exports = (router) => {
         categories: categoryIds,
       });
 
-      // user.posts.push(post._id);
-      // await user.save();
+      await db.Users.updateOne(
+        { _id: req.user._id },
+        { $push: { posts: post._id } }
+      );
 
       await db.Categories.updateMany(
         { _id: { $in: categories } },
-        { $push: { posts: post._id } }
-      );
-      await db.Users.updateOne(
-        { _id: req.user._id },
         { $push: { posts: post._id } }
       );
 
@@ -103,22 +101,21 @@ module.exports = (router) => {
 
   router.delete("/:id", async (req, res) => {
     try {
-      const postCount = await db.Posts.count({ _id: req.params._id });
-      const user = req.user;
-
       if (!req.user) {
         throw new Error(
           `Pleae login and provide authentication token to create a post ${req.user}`
         );
       }
 
-      if (postCount === 1) {
-        user.posts = user.posts.filter(
-          (postItem) => postItem !== req.params._id
-        );
-      }
+      await db.Categories.updateMany({}, { $pull: { posts: req.params.id } });
+
+      await db.Users.updateOne(
+        { _id: req.user._id },
+        { $pull: { posts: req.params.id } }
+      );
 
       const post = await db.Posts.remove({ _id: req.params.id });
+
       res.http200({ post });
     } catch (error) {
       res.http400({
@@ -128,78 +125,3 @@ module.exports = (router) => {
     }
   });
 };
-
-// const postBody = req.body.post;
-//       const categoriesTitles = req.body.categories ? req.body.categories : [];
-//       let categories = [];
-
-//       if (categoriesTitles.length !== 0) {
-//         categories = categoriesTitles.forEach(async (categoryTitle) => {
-//           let category = await db.Categories.findOne({ title: categoryTitle });
-//           let categories = [];
-
-//           category = category
-//             ? category
-//             : await db.Categories.create({ title: categorTitle });
-
-//           categories.push(category._id);
-//           return categories;
-//         });
-//       }
-
-//       const user = req.user
-//         ? await db.Users.findOne({ _id: req.user._id })
-//         : null;
-
-//       if (user) {
-//         user.posts.push(post._id);
-//         await user.save();
-//       }
-
-//       console.log(categories);
-
-//       const post = await db.Posts.create({
-//         ...postBody,
-//         categories: categories,
-//       });
-
-//       res.http200({ post });
-//     } catch (error) {
-//       res.http400({
-//         message: "Sorry, could not create post",
-//         error: error.toString(),
-//       });
-//     }
-
-// //use categories array
-// const categoryTitle = req.body.category;
-// const postBody = ({ title, body, picture } = req.body);
-
-// //check if picture exists
-
-// const post = await db.Posts.create(postBody);
-
-// const user = req.user
-//   ? await db.Users.findOne({ _id: req.user._id })
-//   : null;
-
-// let category = categoryTitle
-//   ? await db.Categories.findOne({ title: categoryTitle })
-//   : null;
-
-// if (category) {
-//   post.categories.push(category._id);
-//   category.posts.push(post._id);
-
-//   await category.save();
-//   await post.save();
-
-//   // if(!post.categories.find(categoryId => categoryId === category._id)){
-//   //   post.categories.push(category._id)
-//   // }
-// }
-
-// if (user) {
-//   user.posts.push(post._id);
-//   await user.save();
-// }
