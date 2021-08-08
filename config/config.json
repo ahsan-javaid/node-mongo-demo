@@ -1,12 +1,9 @@
 {
-  "specialization": {
-  },
+  "specialization": {},
   "middleware": {
     "static": {
       "module": {
-        "arguments": [
-          "path:./.build"
-        ]
+        "arguments": ["path:./.build"]
       }
     },
     "router": {
