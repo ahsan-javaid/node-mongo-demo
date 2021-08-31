@@ -15,6 +15,12 @@
     {
       "name": "Category",
       "description": "Everything about your Category"
+    },
+    {
+      "title":"Post title",
+      "description": "The body of the post",
+      "user": "The user who made the post"
+
     }
   ],
   "schemes": [
@@ -214,6 +220,138 @@
           }
         ]
       }
+    },"/api/v1/posts": {
+      "get": {
+        "tags": [
+          "Post"
+        ],
+        "summary": "Get Posts",
+        "description": "Get Posts",
+        "operationId": "get-posts",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Post"
+        ],
+        "summary": "Add Post",
+        "description": "Add Post",
+        "operationId": "add-post",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Post",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Post"
+        ],
+        "summary": "Update Post",
+        "description": "Update Post",
+        "operationId": "update-post",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Post",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Post"
+        ],
+        "summary": "Delete Post",
+        "description": "Delete Post",
+        "operationId": "delete-post",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Post",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeletePost"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     },
     "/api/v1/categories{id}": {
       "put": {
@@ -258,6 +396,34 @@
         "summary": "Delete Category",
         "description": "Delete Category",
         "operationId": "delete-category",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/posts/allPosts": {
+      "get": {
+        "tags": [
+          "Post"
+        ],
+        "summary": "get User Posts",
+        "description": "get User Posts",
+        "operationId": "get-userposts",
         "consumes": [
           "application/json"
         ],
@@ -346,7 +512,7 @@
       "properties": {
         "email": {
           "type": "string",
-          "example": "user@domain.com"
+          "example": "ABIAN@domain.com"
         },
         "password": {
           "type": "string",
@@ -376,6 +542,45 @@
       },
       "xml": {
         "name": "Singup"
+      }
+    },
+    "Post": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "user"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Post 1"
+        },
+        "description": {
+          "type": "string",
+          "example": "hello this is post 1"
+        }
+        
+      },
+      "xml": {
+        "name": "Post"
+      }
+    },
+    "DeletePost": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "user"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "61292fdb877244a0f4aa46fa"
+        }
+      },
+      "xml": {
+        "name": "DeletePost"
       }
     }
   }
